@@ -137,7 +137,7 @@ class WeightGraphState extends State<WeightGraph> {
       height: 50.0,
       child: ElevatedButton(
         onPressed: () {
-          if (DateTime.tryParse(_control.text) != null &&
+          if (_control.text.isNotEmpty &&
               _selectedWeight > 0.0) {
             Navigator.pop(context);
             _pet!.weights
@@ -281,7 +281,7 @@ class WeightGraphState extends State<WeightGraph> {
         lastDate: DateTime(2101));
     if (picked != null && picked != _control.text) _selectedDate = picked;
     setState(() {
-      _control.text = "${picked!.month}/${picked.day}/${picked.year}";
+      _control.text = "${picked!.day}/${picked.month}/${picked.year}";
     });
   }
 }
