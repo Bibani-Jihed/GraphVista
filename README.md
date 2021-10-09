@@ -1,16 +1,6 @@
 # pets_weight_graph
 
-Pet’s weight graph
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- The graph is created from scratch using Flutter Canvas and CustomPainter.
+- Repository pattern to separate business logic and data access logic to avoid coupling.
+- Cubit for the app state management.
+- Mockito for unit testing Cubit and Repository classes (please take a look at “pets_cubit_test.dart” under \test folder).
