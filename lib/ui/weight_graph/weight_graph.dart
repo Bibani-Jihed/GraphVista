@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:pets_weight_graph/constants/colors.dart';
 import 'package:pets_weight_graph/cubit/pet_cubit.dart';
 import 'package:pets_weight_graph/data/network/constants/endpoints.dart';
 import 'package:pets_weight_graph/models/pet/pet.dart';
 import 'package:pets_weight_graph/models/pet/weight.dart';
+import 'package:pets_weight_graph/provider/settings.dart';
 import 'package:pets_weight_graph/ui/weight_graph/graph_painter.dart';
+import 'package:provider/provider.dart';
 
 class WeightGraph extends StatefulWidget {
   @override
@@ -29,6 +32,7 @@ class WeightGraphState extends State<WeightGraph> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primary,
       appBar: _buildAppBar(),
       body: _buildBody(),
     );
@@ -37,8 +41,25 @@ class WeightGraphState extends State<WeightGraph> {
   //Widgets------------------------------------------
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.black,
-      actions: [],
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      elevation: 0,
+      actions: [
+        IconButton(
+            onPressed: () {
+              changeTheme(
+                  Provider.of<Settings>(context, listen: false).isDarkMode
+                      ? false
+                      : true,
+                  context);
+            },
+            icon: Icon(
+              Provider.of<Settings>(context, listen: false).isDarkMode
+                  ? Icons.light_mode_outlined
+                  : Icons.light_mode_rounded,
+              color: Theme.of(context).colorScheme.secondary,
+            ))
+      ],
+      title: _buildTitle(),
     );
   }
 
@@ -48,7 +69,6 @@ class WeightGraphState extends State<WeightGraph> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTitle(),
           _buildBlocBuilder(),
           _buildAddWeightButton(),
         ],
@@ -58,50 +78,59 @@ class WeightGraphState extends State<WeightGraph> {
 
   Widget _buildTitle() {
     return Container(
-      margin: EdgeInsets.only(left: 10),
       child: Text(
         "Weight Graph",
         textAlign: TextAlign.left,
         style: TextStyle(
-            color: Colors.white, fontSize: 30.0, fontWeight: FontWeight.w400),
+            color: Theme.of(context).colorScheme.secondary,
+            fontSize: 25.0,
+            fontWeight: FontWeight.w600),
       ),
     );
   }
 
   Widget _buildAddWeightButton() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          width: 160,
-          height: 40.0,
-          child: ElevatedButton(
-            onPressed: () {
-              _buildBottomSheet();
-            },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: ElevatedButton(
+          style: ButtonStyle(
+            elevation: MaterialStateProperty.all<double>(0),
+            backgroundColor: MaterialStateProperty.all<Color>(
+                AppColors.ORANGE.withOpacity(0.2)),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.0),
+              ),
+            ),
+          ),
+          child: Container(
+            height: 50,
+            width: 120,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.add,
-                  color: Color(0xffffa04c),
+                  color: AppColors.ORANGE,
                   size: 30,
                 ),
                 Text(
                   ' Weight',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
+                  style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.ORANGE),
                 ),
               ],
             ),
-            style: ElevatedButton.styleFrom(
-              primary: Color(0xffffa04c).withOpacity(0.2),
-              onPrimary: Color(0xffffa04c),
-              shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(20.0)),
-            ),
           ),
-        )
-      ],
+          onPressed: () {
+            _buildBottomSheet();
+          },
+        ),
+      ),
     );
   }
 
@@ -118,42 +147,84 @@ class WeightGraphState extends State<WeightGraph> {
         },
         readOnly: true,
         onChanged: (text) {},
-        cursorColor: Colors.white30,
-        style: TextStyle(color: Colors.white),
+        cursorColor: Theme.of(context).colorScheme.secondary,
+        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
         textAlign: TextAlign.center,
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: "Click and select the date",
-          hintStyle: TextStyle(color: Colors.white30),
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
         ),
       ),
     );
   }
 
   Widget _buildAddButton() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      width: MediaQuery.of(context).size.width - 60,
-      height: 50.0,
-      child: ElevatedButton(
-        onPressed: () {
-          if (_control.text.isNotEmpty &&
-              _selectedWeight > 0.0) {
-            Navigator.pop(context);
-            _pet!.weights
-                .add(new Weight(date: _selectedDate, value: _selectedWeight));
-            BlocProvider.of<PetCubit>(context).patchPet(_pet!);
-          }
-        },
-        child: Text(
-          ' ADD',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: ElevatedButton(
+          style: ButtonStyle(
+            elevation: MaterialStateProperty.all<double>(0),
+            backgroundColor: MaterialStateProperty.all<Color>(
+                AppColors.ORANGE.withOpacity(0.2)),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.0),
+              ),
+            ),
+          ),
+          child: Container(
+            height: 50,
+            width: MediaQuery.of(context).size.width,
+            child: Center(
+              child: Text(
+                'ADD',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.ORANGE),
+              ),
+            ),
+          ),
+          onPressed: () {
+            if (_control.text.isNotEmpty && _selectedWeight > 0.0) {
+              Navigator.pop(context);
+              _pet!.weights
+                  .add(new Weight(date: _selectedDate, value: _selectedWeight));
+              BlocProvider.of<PetCubit>(context).patchPet(_pet!);
+            }
+          },
         ),
-        style: ElevatedButton.styleFrom(
-          primary: Color(0xffffa04c).withOpacity(0.2),
-          onPrimary: Color(0xffffa04c),
-          shape: new RoundedRectangleBorder(
-              borderRadius: new BorderRadius.circular(20.0)),
+      ),
+    );
+
+    return GestureDetector(
+      onTap: () => {
+        if (_control.text.isNotEmpty && _selectedWeight > 0.0)
+          {
+            Navigator.pop(context),
+            _pet!.weights
+                .add(new Weight(date: _selectedDate, value: _selectedWeight)),
+            BlocProvider.of<PetCubit>(context).patchPet(_pet!),
+          }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+            color: AppColors.ORANGE.withAlpha(80),
+            borderRadius: BorderRadius.all((Radius.circular(25)))),
+        height: 50,
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Center(
+          child: Text(
+            'ADD',
+            style: TextStyle(
+                color: AppColors.ORANGE,
+                fontSize: 20,
+                fontWeight: FontWeight.w500),
+          ),
         ),
       ),
     );
@@ -161,7 +232,7 @@ class WeightGraphState extends State<WeightGraph> {
 
   void _buildBottomSheet() {
     showModalBottomSheet(
-        backgroundColor: Colors.black,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 5,
         context: context,
         builder: (BuildContext context) {
@@ -176,14 +247,15 @@ class WeightGraphState extends State<WeightGraph> {
                       Text(
                         "Select your pet weight",
                         style: TextStyle(
-                          color: Colors.white60,
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       DecimalNumberPicker(
                         value: _selectedWeight,
-                        textStyle: TextStyle(color: Colors.white),
+                        textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary),
                         selectedTextStyle: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.secondary,
                             fontSize: 30,
                             fontWeight: FontWeight.bold),
                         haptics: true,
@@ -200,12 +272,12 @@ class WeightGraphState extends State<WeightGraph> {
                       Text(
                         "Select the date",
                         style: TextStyle(
-                          color: Colors.white60,
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       SizedBox(height: 10),
                       _buildDatePickerButton(),
-                      SizedBox(height: 30),
+                      SizedBox(height: 20),
                       _buildAddButton(),
                     ],
                   ),
@@ -218,9 +290,9 @@ class WeightGraphState extends State<WeightGraph> {
 
   BoxDecoration _buildDecoration() {
     return BoxDecoration(
-      color: Colors.black,
+      color: Theme.of(context).colorScheme.primary,
       border: Border.all(
-          color: Colors.white30, // border color
+          color: Theme.of(context).colorScheme.secondary, // border color
           width: 2.0), // border width
       borderRadius:
           BorderRadius.all(Radius.circular(20.0)), // rounded corner radius
@@ -241,7 +313,8 @@ class WeightGraphState extends State<WeightGraph> {
               alignment: Alignment.center,
               child: Text(
                 'You need at least ${3 - _pet!.weights.length} more data points to show the graph',
-                style: TextStyle(color: Colors.white),
+                style:
+                    TextStyle(color: Theme.of(context).colorScheme.secondary),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -253,9 +326,9 @@ class WeightGraphState extends State<WeightGraph> {
             margin: EdgeInsets.only(top: 10),
             height: 300,
             width: _pet!.weights.length * 50,
-            color: Colors.red,
+            color: Theme.of(context).colorScheme.primary,
             child: CustomPaint(
-                painter: GraphPainter(_pet!),
+              painter: GraphPainter(_pet!, context),
             ),
           ),
         );
@@ -266,7 +339,7 @@ class WeightGraphState extends State<WeightGraph> {
           alignment: Alignment.center,
           child: Text(
             'Fetching data..',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Theme.of(context).colorScheme.secondary),
           ),
         ),
       );
@@ -278,10 +351,30 @@ class WeightGraphState extends State<WeightGraph> {
         context: context,
         initialDate: DateTime.now(),
         firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
-    if (picked != null && picked != _control.text) _selectedDate = picked;
-    setState(() {
-      _control.text = "${picked!.day}/${picked.month}/${picked.year}";
-    });
+        lastDate: DateTime(2101),
+        builder: (context, child) {
+          return Theme(
+              data: Theme.of(context).copyWith(
+                  colorScheme: Provider.of<Settings>(context, listen: false)
+                          .isDarkMode
+                      ? ColorScheme.dark(
+                          primary: Theme.of(context).colorScheme.secondary,
+                          secondary: Theme.of(context).colorScheme.primary)
+                      : ColorScheme.light(
+                          primary: Theme.of(context).colorScheme.secondary,
+                          secondary: Theme.of(context).colorScheme.primary)),
+              child: child!);
+        });
+
+    if (picked != null && picked != _control.text) {
+      _selectedDate = picked;
+      setState(() {
+        _control.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
+
+  void changeTheme(bool set, BuildContext context) {
+    Provider.of<Settings>(context, listen: false).setDarkMode(set);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pets_weight_graph/constants/colors.dart';
 import 'package:pets_weight_graph/models/pet/pet.dart';
 
 const List<String> months = [
@@ -20,35 +21,38 @@ const List<String> months = [
 
 class GraphPainter extends CustomPainter {
   Pet pet;
-
+  BuildContext context;
   var _max; //maximum weight
   var _min; //minimum weight
-  var _y;   //Y Labels
-  var _x;   //X Labels
+  var _y; //Y Labels
+  var _x; //X Labels
 
-  GraphPainter(this.pet);
+  GraphPainter(this.pet, this.context);
 
   static double border = 10.0; //take into consideration Labels space
 
   //paints
   final Paint linePaint = Paint()
-    ..strokeWidth = 3.0
+    ..strokeWidth = 6.0
     ..style = PaintingStyle.stroke
-    ..color = Colors.lightGreen;
+    ..color = AppColors.GREEN;
 
   //styles
-  final TextStyle xLabelStyle = TextStyle(
-      color: Color(0xFF979797), fontSize: 11, fontWeight: FontWeight.bold);
+  final TextStyle labelStyle = TextStyle(
+      color: Color(0xFF979797), fontSize: 15, fontWeight: FontWeight.w600);
 
   @override
   void paint(Canvas canvas, Size size) {
     _init();
 
     //reduces the region of the screen that future draw operations can write to
-    final clipRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    var _width = MediaQuery.of(context).size.width > size.width
+        ? MediaQuery.of(context).size.width - 10
+        : size.width;
+    final clipRect = Rect.fromLTWH(0, 0, _width, size.height);
     canvas.clipRect(clipRect);
     //change canvas background color
-    canvas.drawPaint(Paint()..color = Colors.black);
+    canvas.drawPaint(Paint()..color = Theme.of(context).colorScheme.primary);
 
     //calculate drawable graph width and height
     final drawableHeight = size.height - border;
@@ -63,24 +67,23 @@ class GraphPainter extends CustomPainter {
     final boxH = hu * 3.0;
     final boxW = wu;
 
-
     final hr = boxH / (_max - _min); //height per unit value
 
     //offset of the first point
-    _drawDashLine(canvas,size,  border + boxH / 2.0);
-    _drawVerticalLines(canvas,size,wu,boxH);
+    _drawDashLine(canvas, size, border + boxH / 2.0);
+    _drawVerticalLines(canvas, size, wu, boxH);
     //offset of the first point
-    var first  = Offset(border + boxW / 2.0, border + boxH / 2.0);
+    var first = Offset(border + boxW / 2.0, border + boxH / 2.0);
 
-    final points = _calculatePoints(canvas, first , boxW, boxH, hr);
+    final points = _calculatePoints(canvas, first, boxW, boxH, hr);
     _drawPath(canvas, points);
     _drawPoints(canvas, points);
 
     //Draw Dates Labels
-    _drawXLabels(canvas, first , wu, hu);
+    _drawXLabels(canvas, first, wu, hu);
 
     //offset of the first label
-     first = Offset(first.dx - 20, 10);
+    first = Offset(first.dx - 20, 10);
     _drawYLabels(canvas, first, hu);
   }
 
@@ -108,10 +111,11 @@ class GraphPainter extends CustomPainter {
     points.forEach((point) {
       canvas.drawCircle(
         point, //offset
-        8, //radius
-        Paint()..color = Colors.lightGreen, //point color
+        10, //radius
+        Paint()..color = AppColors.GREEN, //point color
       );
-      canvas.drawCircle(point, 4, Paint()..color = Colors.black);
+      canvas.drawCircle(
+          point, 5, Paint()..color = Theme.of(context).colorScheme.primary);
     });
   }
 
@@ -131,7 +135,7 @@ class GraphPainter extends CustomPainter {
     var currentDate;
     _x.forEach((element) {
       if (element != currentDate) {
-        _drawText(canvas, bottom, element, xLabelStyle, wd);
+        _drawText(canvas, bottom, element, labelStyle, wd * 2);
       }
       currentDate = element;
       bottom += Offset(wd, 0);
@@ -139,14 +143,13 @@ class GraphPainter extends CustomPainter {
   }
 
   void _drawYLabels(Canvas canvas, Offset start, double hu) {
-
     //Draw 4 Labels based on the given pet weights
     //Starting from the maximum weight
     //divide the max weight by 4 to get the odd
     //every next value will be the current Label minus the odd (currentValue-odd)
     //the last label ([0,0]) will be the minimum weight or 0
 
-    final odd = ((_max-_min) / 3).ceil();
+    final odd = ((_max - _min) / 3).ceil();
 
     final endValue = _max.ceil();
 
@@ -154,17 +157,18 @@ class GraphPainter extends CustomPainter {
 
     var currentValue = endValue;
 
-
     for (int i = 1; i < 4; i++) {
-      _drawText(canvas, start, currentValue.toString(), xLabelStyle, hu);
+      _drawText(canvas, start, currentValue.toString(), labelStyle, hu);
       start += Offset(0, hu);
       currentValue = currentValue - odd;
     }
     _drawText(
         canvas,
         start,
-        (currentValue > startValue) ? startValue.toString() : startValue.toString(),
-        xLabelStyle,
+        (currentValue > startValue)
+            ? startValue.toString()
+            : startValue.toString(),
+        labelStyle,
         hu);
   }
 
@@ -192,28 +196,34 @@ class GraphPainter extends CustomPainter {
     return textPainter;
   }
 
-
-
-  void _drawDashLine(Canvas canvas,size,xCenter) {
-    double dashWidth = 10, dashSpace = 5, startX = border*3;
+  void _drawDashLine(Canvas canvas, size, xCenter) {
+    double dashWidth = 10, dashSpace = 5, startX = border * 3;
     final paint = Paint()
-      ..color = Colors.lightGreen.withOpacity(0.5)
+      ..color = AppColors.GREEN
       ..strokeWidth = 2;
-    while (startX < size.width) {
-      canvas.drawLine(Offset(startX, xCenter), Offset(startX + dashWidth, xCenter), paint);
+    var _width = MediaQuery.of(context).size.width > size.width
+        ? MediaQuery.of(context).size.width - 10
+        : size.width;
+    while (startX < _width) {
+      canvas.drawLine(
+          Offset(startX, xCenter), Offset(startX + dashWidth, xCenter), paint);
       startX += dashWidth + dashSpace;
     }
   }
 
-  void _drawVerticalLines(Canvas canvas, Size size, double wu,boxH) {
-    double startX = border*10;
+  void _drawVerticalLines(Canvas canvas, Size size, double wu, boxH) {
+    double startX = border * 10;
     final paint = Paint()
       ..color = Colors.grey.withOpacity(0.2)
-      ..strokeWidth = 1;
-    var unite=border*3;
-    while (unite <= size.width) {
-      canvas.drawLine(Offset(unite, 0), Offset(unite, size.height-startX), paint);
-      unite+=wu;
+      ..strokeWidth = 2;
+    var unite = border * 3;
+    var _width = MediaQuery.of(context).size.width > size.width
+        ? MediaQuery.of(context).size.width - 10
+        : size.width;
+    while (unite <= _width) {
+      canvas.drawLine(
+          Offset(unite, 0), Offset(unite, size.height - startX), paint);
+      unite += wu;
     }
   }
 
@@ -237,5 +247,4 @@ class GraphPainter extends CustomPainter {
         .map((e) => "${months[e.date.month]}\n${e.date.year}")
         .toList();
   }
-
 }
